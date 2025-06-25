@@ -1,37 +1,62 @@
-// Import necessary hooks and components from react-router-dom and other libraries.
-import { Link, useParams } from "react-router-dom";  // To use link for navigation and useParams to get URL parameters
-import PropTypes from "prop-types";  // To define prop types for this component
-import rigoImageUrl from "../assets/img/rigo-baby.jpg"  // Import an image asset
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { updateContact, getContacts } from "../api";
 
-// Define and export the Single component which displays individual item details.
-export const Single = props => {
-  // Access the global state using the custom hook.
-  const { store } = useGlobalReducer()
+export const Single = () => {
+  const { store, dispatch } = useGlobalReducer();
+  const { theId } = useParams(); // ← aquí usamos el ID del contacto
+  const navigate = useNavigate();
 
-  // Retrieve the 'theId' URL parameter using useParams hook.
-  const { theId } = useParams()
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+  const contactToEdit = store.contacts.find(c => c.id === parseInt(theId));
+
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    address: ""
+  });
+
+  useEffect(() => {
+    if (contactToEdit) {
+      setForm({
+        full_name: contactToEdit.full_name,
+        email: contactToEdit.email,
+        phone: contactToEdit.phone,
+        address: contactToEdit.address
+      });
+    }
+  }, [contactToEdit]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await updateContact(theId, form);
+      const updated = await getContacts();
+      dispatch({ type: "set_contacts", payload: updated });
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Error al actualizar contacto", err);
+    }
+  };
+
+  if (!contactToEdit) return <div className="text-center mt-5">Cargando contacto...</div>;
 
   return (
-    <div className="container text-center">
-      {/* Display the title of the todo element dynamically retrieved from the store using theId. */}
-      <h1 className="display-4">Todo: {singleTodo?.title}</h1>
-      <hr className="my-4" />  {/* A horizontal rule for visual separation. */}
-
-      {/* A Link component acts as an anchor tag but is used for client-side routing to prevent page reloads. */}
-      <Link to="/">
-        <span className="btn btn-primary btn-lg" href="#" role="button">
-          Back home
-        </span>
-      </Link>
+    <div className="container mt-5">
+      <h2>Editar contacto</h2>
+      <form onSubmit={handleSubmit}>
+        <input className="form-control mb-2" name="full_name" value={form.full_name} onChange={handleChange} required />
+        <input className="form-control mb-2" name="email" type="email" value={form.email} onChange={handleChange} required />
+        <input className="form-control mb-2" name="phone" value={form.phone} onChange={handleChange} required />
+        <input className="form-control mb-2" name="address" value={form.address} onChange={handleChange} required />
+        <button className="btn btn-primary w-100">Guardar cambios</button>
+      </form>
     </div>
   );
-};
-
-// Use PropTypes to validate the props passed to this component, ensuring reliable behavior.
-Single.propTypes = {
-  // Although 'match' prop is defined here, it is not used in the component.
-  // Consider removing or using it as needed.
-  match: PropTypes.object
 };
