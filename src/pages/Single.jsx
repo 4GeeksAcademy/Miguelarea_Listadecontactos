@@ -11,7 +11,7 @@ export const Single = () => {
   const contactToEdit = store.contacts.find(c => c.id === parseInt(theId));
 
   const [form, setForm] = useState({
-    full_name: "",
+    name: "",
     email: "",
     phone: "",
     address: ""
@@ -20,7 +20,7 @@ export const Single = () => {
   useEffect(() => {
     if (contactToEdit) {
       setForm({
-        full_name: contactToEdit.full_name,
+        name: contactToEdit.name,
         email: contactToEdit.email,
         phone: contactToEdit.phone,
         address: contactToEdit.address
@@ -51,7 +51,7 @@ export const Single = () => {
     <div className="container mt-5">
       <h2>Editar contacto</h2>
       <form onSubmit={handleSubmit}>
-        <input className="form-control mb-2" name="full_name" value={form.full_name} onChange={handleChange} required />
+        <input className="form-control mb-2" name="name" value={form.name} onChange={handleChange} required />
         <input className="form-control mb-2" name="email" type="email" value={form.email} onChange={handleChange} required />
         <input className="form-control mb-2" name="phone" value={form.phone} onChange={handleChange} required />
         <input className="form-control mb-2" name="address" value={form.address} onChange={handleChange} required />

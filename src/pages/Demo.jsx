@@ -41,14 +41,16 @@ export const Demo = () => {
     try {
       if (selectedContact) {
         await updateContact(selectedContact.id, contactData);
+        console.log("🛠 Contacto actualizado:", selectedContact.id);
       } else {
-        await createContact(contactData);
+        const newContact = await createContact(contactData);
+        console.log("✅ Contacto creado:", newContact);
       }
 
-      // ✅ Re-obtener los contactos actualizados desde el backend
       const updatedContacts = await getContacts();
-      dispatch({ type: "set_contacts", payload: updatedContacts });
+      console.log("📦 Contactos actualizados desde el backend:", updatedContacts);
 
+      dispatch({ type: "set_contacts", payload: updatedContacts });
       dispatch({ type: "select_contact", payload: null });
       navigate("/");
     } catch (error) {

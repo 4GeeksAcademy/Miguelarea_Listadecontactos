@@ -14,7 +14,7 @@ const Home = () => {
         dispatch({ type: "set_contacts", payload: contacts });
       } catch (error) {
         console.error("❌ Error al cargar contactos", error);
-        dispatch({ type: "set_contacts", payload: [] }); // fallback para evitar errores de tipo
+        dispatch({ type: "set_contacts", payload: [] });
       }
     };
 
@@ -32,10 +32,10 @@ const Home = () => {
 
   return (
     <div className="container mt-5">
-      <h1>Agenda de Contactos</h1>
+      <h1 className="mb-4">Agenda de Contactos</h1>
 
       <button
-        className="btn btn-success mb-3"
+        className="btn btn-success mb-4"
         onClick={() => {
           dispatch({ type: "select_contact", payload: null });
           navigate("/add");
@@ -44,29 +44,62 @@ const Home = () => {
         Agregar nuevo contacto
       </button>
 
+      console.log("✅ CONTACTOS EN RENDER:", store.contacts);
+
       {Array.isArray(store.contacts) && store.contacts.length > 0 ? (
         store.contacts.map((contact) => (
-          <div key={contact.id} className="card mb-3 p-3">
-            <p><strong>📌</strong> {contact.address}</p>
-            <p><strong>📞</strong> {contact.phone}</p>
-            <p><strong>📧</strong> {contact.email}</p>
+          <div
+            key={contact.id}
+            className="card mb-3 p-3 shadow-sm border-0"
+            style={{
+              transition: "transform 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.01)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            <div className="d-flex align-items-center flex-column flex-md-row text-center text-md-start">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                alt="Avatar"
+                className="rounded-circle me-md-3 mb-3 mb-md-0"
+                style={{ width: "70px", height: "70px", objectFit: "cover" }}
+              />
 
-            <button
-              className="btn btn-warning me-2"
-              onClick={() => {
-                dispatch({ type: "select_contact", payload: contact });
-                navigate(`/edit/${contact.id}`);
-              }}
-            >
-              Editar
-            </button>
+              <div className="flex-grow-1">
+                <h5 className="mb-1">{contact.name}</h5>
+                <p className="mb-1">
+                  <i className="bi bi-geo-alt-fill me-2"></i>
+                  {contact.address}
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-telephone-fill me-2"></i>
+                  {contact.phone}
+                </p>
+                <p className="mb-0">
+                  <i className="bi bi-envelope-fill me-2"></i>
+                  {contact.email}
+                </p>
+              </div>
 
-            <button
-              className="btn btn-danger"
-              onClick={() => handleDelete(contact.id)}
-            >
-              Eliminar
-            </button>
+              <div className="d-flex flex-row flex-md-column justify-content-center mt-3 mt-md-0 ms-md-3">
+                <button
+                  className="btn btn-outline-secondary btn-sm me-2 me-md-0 mb-md-2"
+                  onClick={() => {
+                    dispatch({ type: "select_contact", payload: contact });
+                    navigate(`/edit/${contact.id}`);
+                  }}
+                >
+                  <i className="bi bi-pencil-fill"></i>
+                </button>
+
+                <button
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={() => handleDelete(contact.id)}
+                >
+                  <i className="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
           </div>
         ))
       ) : (
