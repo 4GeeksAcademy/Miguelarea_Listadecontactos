@@ -44,8 +44,6 @@ const Home = () => {
         Agregar nuevo contacto
       </button>
 
-      console.log("✅ CONTACTOS EN RENDER:", store.contacts);
-
       {Array.isArray(store.contacts) && store.contacts.length > 0 ? (
         store.contacts.map((contact) => (
           <div
