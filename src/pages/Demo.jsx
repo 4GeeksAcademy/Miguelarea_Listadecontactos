@@ -1,98 +1,139 @@
 import React, { useState, useEffect } from "react";
-import { createContact, updateContact, getContacts } from "../api";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { createContact, updateContact } from "../api";
 
 export const Demo = () => {
   const { store, dispatch } = useGlobalReducer();
-  const selectedContact = store.selectedContact;
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: ""
+  });
 
   useEffect(() => {
-    if (selectedContact) {
-      setName(selectedContact.name || "");
-      setEmail(selectedContact.email || "");
-      setPhone(selectedContact.phone || "");
-      setAddress(selectedContact.address || "");
-    } else {
-      setName("");
-      setEmail("");
-      setPhone("");
-      setAddress("");
+    if (store.selectedContact) {
+      setForm({
+        name: store.selectedContact.name || "",
+        email: store.selectedContact.email || "",
+        phone: store.selectedContact.phone || "",
+        address: store.selectedContact.address || ""
+      });
     }
-  }, [selectedContact]);
+  }, [store.selectedContact]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const contactData = {
-      name,
-      email,
-      phone,
-      address,
-      agenda_slug: "MiguelAgenda"
-    };
-
     try {
-      if (selectedContact) {
-        await updateContact(selectedContact.id, contactData);
-        console.log("🛠 Contacto actualizado:", selectedContact.id);
+      if (store.selectedContact) {
+        const updated = await updateContact(store.selectedContact.id, {
+          ...form,
+          agenda_slug: "MiguelAgenda"
+        });
+        dispatch({ type: "update_contact", payload: updated });
       } else {
-        const newContact = await createContact(contactData);
-        console.log("✅ Contacto creado:", newContact);
+        const added = await createContact({
+          ...form,
+          agenda_slug: "MiguelAgenda"
+        });
+        dispatch({ type: "add_contact", payload: added });
       }
 
-      const updatedContacts = await getContacts();
-      console.log("📦 Contactos actualizados desde el backend:", updatedContacts);
-
-      dispatch({ type: "set_contacts", payload: updatedContacts });
       dispatch({ type: "select_contact", payload: null });
       navigate("/");
-    } catch (error) {
-      console.error("❌ Error al guardar contacto:", error);
+    } catch (err) {
+      console.error("❌ Error al guardar contacto", err);
     }
   };
 
   return (
-    <div className="container">
-      <h2>{selectedContact ? "Editar contacto" : "Agregar nuevo contacto"}</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Nombre completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="form-control mb-2"
-        />
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="form-control mb-2"
-        />
-        <input
-          type="tel"
-          placeholder="Teléfono"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="form-control mb-2"
-        />
-        <input
-          type="text"
-          placeholder="Dirección"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          className="form-control mb-3"
-        />
-        <button type="submit" className="btn btn-primary">
-          {selectedContact ? "Guardar cambios" : "Guardar"}
+    <div className="d-flex justify-content-center mt-5">
+      <form
+        onSubmit={handleSubmit}
+        className="border p-4 rounded shadow-sm"
+        style={{ width: "100%", maxWidth: "600px" }}
+      >
+        <h2 className="text-center mb-4">
+          {store.selectedContact ? "Edit Contact" : "Add a New Contact"}
+        </h2>
+
+        <div className="mb-3">
+          <label htmlFor="name" className="form-label">
+            Full Name
+          </label>
+          <input
+            id="name"
+            name="name"
+            className="form-control"
+            placeholder="Enter full name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            className="form-control"
+            placeholder="Enter email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="phone" className="form-label">
+            Phone
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            className="form-control"
+            placeholder="Enter phone"
+            value={form.phone}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="address" className="form-label">
+            Address
+          </label>
+          <input
+            id="address"
+            name="address"
+            className="form-control"
+            placeholder="Enter address"
+            value={form.address}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button className="btn btn-primary w-100" type="submit">
+          {store.selectedContact ? "Update" : "Save"}
         </button>
+
+        <div className="text-start mt-3">
+          <a href="/" className="text-decoration-underline">
+            or get back to contacts
+          </a>
+        </div>
       </form>
     </div>
   );

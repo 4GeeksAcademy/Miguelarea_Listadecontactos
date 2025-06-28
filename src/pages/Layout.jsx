@@ -1,79 +1,25 @@
-import React, { useEffect } from "react";
-import useGlobalReducer from "../hooks/useGlobalReducer";
-import { getContacts, deleteContact } from "../api";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { Outlet } from "react-router-dom";
 
-const Home = () => {
-  const { store, dispatch } = useGlobalReducer();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const contacts = await getContacts();
-        dispatch({ type: "set_contacts", payload: contacts });
-      } catch (error) {
-        console.error("❌ Error al cargar contactos", error);
-        dispatch({ type: "set_contacts", payload: [] }); // fallback para evitar errores de tipo
-      }
-    };
-
-    fetchContacts();
-  }, [dispatch]);
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteContact(id);
-      dispatch({ type: "delete_contact", payload: id });
-    } catch (error) {
-      console.error("❌ Error al eliminar contacto", error);
-    }
-  };
-
+const Layout = () => {
   return (
-    <div className="container mt-5">
-      <h1>Agenda de Contactos</h1>
+    <div className="d-flex flex-column min-vh-100">
+      {/* Aquí podrías agregar tu Navbar si lo tienes */}
+      <header className="bg-light py-3 shadow-sm">
+        <div className="container">
+          <h2 className="mb-0">Mi Agenda</h2>
+        </div>
+      </header>
 
-      <button
-        className="btn btn-success mb-3"
-        onClick={() => {
-          dispatch({ type: "select_contact", payload: null });
-          navigate("/add");
-        }}
-      >
-        Agregar nuevo contacto
-      </button>
+      <main className="flex-grow-1">
+        <Outlet />
+      </main>
 
-      {Array.isArray(store.contacts) && store.contacts.length > 0 ? (
-        store.contacts.map((contact) => (
-          <div key={contact.id} className="card mb-3 p-3">
-            <p><strong>📌</strong> {contact.address}</p>
-            <p><strong>📞</strong> {contact.phone}</p>
-            <p><strong>📧</strong> {contact.email}</p>
-
-            <button
-              className="btn btn-warning me-2"
-              onClick={() => {
-                dispatch({ type: "select_contact", payload: contact });
-                navigate(`/edit/${contact.id}`);
-              }}
-            >
-              Editar
-            </button>
-
-            <button
-              className="btn btn-danger"
-              onClick={() => handleDelete(contact.id)}
-            >
-              Eliminar
-            </button>
-          </div>
-        ))
-      ) : (
-        <p>No hay contactos disponibles.</p>
-      )}
+      <footer className="bg-dark text-white text-center py-3 mt-5">
+        <small>© {new Date().getFullYear()} Mi Agenda</small>
+      </footer>
     </div>
   );
 };
 
-export default Home;
+export default Layout;
